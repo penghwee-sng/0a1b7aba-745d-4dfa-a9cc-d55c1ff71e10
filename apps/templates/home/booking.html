@@ -28,6 +28,8 @@
 <link rel="stylesheet" href="/static/assets/plugins/daterangepicker/daterangepicker.css">
 <!-- summernote -->
 <link rel="stylesheet" href="/static/assets/plugins/summernote/summernote-bs4.min.css">
+<!-- Toastr -->
+<link rel="stylesheet" href="/static/assets/plugins/toastr/toastr.min.css">
 
 <style>
     .bootstrap-datetimepicker-widget table td.day {
@@ -38,6 +40,11 @@
     .bootstrap-datetimepicker-widget table td.disabled:hover {
         font-weight: normal;
         color: #dbdbdb;
+    }
+
+    #room .btn-sm,
+    #time .btn-sm {
+        margin-right: 10px;
     }
 </style>
 
@@ -51,14 +58,14 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-6">
-                    <h1>Make Booking</h1>
+                    <h1>Make a Booking</h1>
                 </div>
-                <div class="col-sm-6">
+                <!-- <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#">Booking</a></li>
                         <li class="breadcrumb-item active">Make Booking</li>
                     </ol>
-                </div>
+                </div> -->
             </div><!-- /.row -->
         </div><!-- /.container-fluid -->
     </div>
@@ -72,27 +79,23 @@
 
                     <div class="card">
                         <div class="card-body">
-
-                            <div class="form-group">
-                                <label>Room</label>
-                                <select id="room" class="form-control">
-                                    <option selected value="-1">Pick a room...</option>
-                                    <option value="0">Room U</option>
-                                    <option value="1">Room C</option>
-                                </select>
-                            </div>
-
+                            {% csrf_token %}
                             <div class="form-group">
                                 <label>Date</label>
                                 <div id="calendar" style="width: 100%"></div>
                             </div>
 
                             <div class="form-group">
+                                <label>Room</label>
+                                <div class="btn-group-toggle" data-toggle="buttons" id="room">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
                                 <label>Time</label>
-                                <select id="time" class="form-control" disabled>
-                                    <option>8.00am</option>
-                                    <option>12.00pm</option>
-                                </select>
+                                <div class="btn-group-toggle" data-toggle="buttons" id="time">
+                                </div>
+                                <div id="no-room-message">No room selected</div>
                             </div>
 
                         </div>
@@ -101,7 +104,7 @@
 
 
                         <div class="card-footer">
-                            <button type="submit" class="btn btn-info btn-block">Book Now</button>
+                            <button id="submit" type="button" class="btn btn-info btn-block">Book Now</button>
                         </div>
                         <!-- /.card-body -->
                     </div>
@@ -149,10 +152,14 @@
 <script src="/static/assets/plugins/summernote/summernote-bs4.min.js"></script>
 <!-- overlayScrollbars -->
 <script src="/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- Toastr -->
+<script src="/static/assets/plugins/toastr/toastr.min.js"></script>
 <!-- AdminLTE App -->
 <script src="/static/assets/js/adminlte.js"></script>
 
 <script>
+    var datestr = "";
+    var duration = 0;
     var now = new Date();
     // date one week later
     var end = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
@@ -160,15 +167,87 @@
         format: 'L',
         inline: true,
         minDate: now,
-        maxDate: now,
+        maxDate: end,
         daysOfWeekDisabled: [0, 6]
     })
     $('#calendar').on('change.datetimepicker', function (e) {
-        console.log(e.date.format('DD-MM-YYYY'));
-        $('#time').prop('disabled', false);
+        datestr = e.date.format('YYYY-MM-DD');
+        console.log(e.date.format('YYYY-MM-DD'));
     });
     $('#room').on('change', function (e) {
-        console.log(e.target.value);
+        $.ajax({
+            url: "/api/rooms/" + e.target.value,
+            dataType: 'json',
+            success: function (data) {
+                duration = data.room.session_duration;
+                sessions = Math.floor(10 / data.room.session_duration);
+                time_slots = [];
+                for (i = 0; i < sessions; i++)
+                {
+                    time_slots.push(i * data.room.session_duration + 8);
+                }
+                // set select to value of array
+                $('#time').empty();
+                for (i = 0; i < time_slots.length; i++)
+                {
+                    date = new Date(0);
+                    date.setHours(time_slots[i]);
+                    date.setMinutes(0);
+                    $('#time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + date.toLocaleTimeString() + '</label>')
+                    $('#no-room-message').hide();
+                }
+            }
+        });
+    });
+    $.ajax({
+        url: "/api/rooms/",
+        dataType: 'json',
+        success: function (data) {
+            data.forEach(d => {
+                $('#room').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="room" value="' + d.room_id + '">' + d.room_name + '</label>')
+            });
+        }
+    });
+
+    $('#submit').on('click', function (e) {
+        e.preventDefault();
+
+        var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
+        $.ajaxSetup({
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('X-CSRFToken', token);
+            }
+        });
+
+        var room = $('input[name=room]:checked').val();
+        var time = $('input[name=time]:checked').val();
+        var data = {
+            room_id: room,
+            time: time,
+            endtime: parseInt(time) + parseInt(duration),
+            date: datestr
+        };
+        console.log(data);
+
+        if (room && time && date)
+        {
+
+            $.ajax({
+                url: "/api/bookings/",
+                type: "POST",
+                data: data,
+                success: function (data) {
+                    console.log(data);
+                    toastr.success('Booking has been made successfully.')
+                },
+                error: function (data) {
+                    toastr.error('Timeslot is unavailable. Please choose another one.')
+                }
+            });
+        } else
+        {
+            toastr.error('Please select a date, room, and time.')
+        }
     });
 
 </script>
