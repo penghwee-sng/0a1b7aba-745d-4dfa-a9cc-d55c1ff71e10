@@ -13,8 +13,8 @@ from django.urls import reverse
 @login_required(login_url="/login/")
 def index(request):
     context = {'segment': 'index'}
-
-    html_template = loader.get_template('home/index.html')
+    context['segment'] = 'booking.html'
+    html_template = loader.get_template('home/booking.html')
     return HttpResponse(html_template.render(context, request))
 
 
