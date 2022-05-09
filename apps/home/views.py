@@ -11,6 +11,7 @@ from django.urls import reverse
 from .models import Room, Booking
 from datetime import datetime, timedelta
 from django.core import serializers
+from django.contrib.auth import get_user_model
 
 
 @login_required(login_url="/login/")
@@ -52,11 +53,15 @@ def api(request, name, id=None):
         if id is None:
             return JsonResponse(list(Room.objects.values()), safe=False)
         else:
+            # get all users
+
+            users = list(get_user_model().objects.all().values('id','username'))
             room = list(Room.objects.filter(room_id=id).values())[0]
-            booking = list(Booking.objects.filter(booking_room_id=id, date__gte=datetime.now(), date__lte=datetime.now()+timedelta(days=14)).values())
+            booking = list(Booking.objects.select_related('booking_user_id').filter(booking_room_id=id, date__gte=datetime.now(), date__lte=datetime.now()+timedelta(days=14)).values())
             return JsonResponse({
                 'room': room, 
-                'booking':booking
+                'booking':booking,
+                'users':users
             }, safe=False)
     if name == 'bookings':
         if request.method == 'POST':
