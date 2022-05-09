@@ -68,4 +68,11 @@ def api(request, name, id=None):
             data = request.POST
             Booking.objects.create(date=data['date'], start_time=f"{data['time']}:00", end_time=f"{data['endtime']}:00", booking_room_id=data['room_id'], booking_user_id=request.user.id)
             return JsonResponse({'status': 'success'}, safe=False)
+        if request.method == 'GET':
+            if id is None:
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, date__gte=datetime.now()).order_by('date').values()), safe=False)
+        if request.method == 'DELETE':
+            if id is not None:
+                Booking.objects.filter(booking_id=id, booking_user_id=request.user.id).delete()
+                return JsonResponse({'status': 'success'}, safe=False)
     return JsonResponse({'name': name})
