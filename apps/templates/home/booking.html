@@ -43,7 +43,8 @@
     }
 
     #room .btn-sm,
-    #time .btn-sm {
+    .time .btn-sm,
+    .time-end .btn-sm {
         margin-right: 10px;
         margin-bottom: 10px;
     }
@@ -73,7 +74,9 @@
                     <div class="card">
                         <div class="card-body">
                             {% csrf_token %}
-
+                            {% if user.is_superuser %}
+                            <h4 class="text-center">From</h4>
+                            {% endif %}
                             <div class="form-group">
                                 <label>Room</label>
                                 <div class="btn-group-toggle" data-toggle="buttons" id="room">
@@ -87,12 +90,30 @@
 
                             <div class="form-group">
                                 <label>Time</label>
-                                <div id="no-room-message" class="text-center">Select a room</div>
-                                <div id="no-date-message" class="text-center" style="display:none;">Pick a date
+                                <div class="text-center no-room-message">Select a room</div>
+                                <div class="text-center no-date-message" style="display:none;">Pick a date
                                 </div>
-                                <div class="btn-group-toggle" data-toggle="buttons" id="time">
+                                <div class="btn-group-toggle time" data-toggle="buttons">
                                 </div>
                             </div>
+                            {% if user.is_superuser %}
+                            <hr>
+                            <h4 class="text-center">To</h4>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <div id="calendar-end" style="width: 100%">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Time</label>
+                                <div class="text-center no-room-message">Select a room</div>
+                                <div class="text-center no-date-message-date" style="display:none;">Pick a date
+                                </div>
+                                <div class="btn-group-toggle time-end" data-toggle="buttons">
+                                </div>
+                            </div>
+                            {% endif %}
 
                         </div>
                         <div class="card-footer">
@@ -210,19 +231,27 @@
     var rooms = {};
     var now = new Date();
     // date one week later
-    var end = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
-    $('#calendar').datetimepicker({
+    var end = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
+    $('#calendar, #calendar-end').datetimepicker({
         format: 'L',
         inline: true,
         minDate: now,
-        maxDate: now,
         daysOfWeekDisabled: [0, 6]
     })
-    $('#calendar').on('change.datetimepicker', function (e) {
+    $('#calendar').on('change.datetimepicker', function (e) {   
+        $('#calendar-end').datetimepicker('minDate', e.date);
+        $("input[name='time']").attr('checked', false);
+        $("input[name='time']").parent().removeClass('focus active');
+        $("input[name='time-end']").attr('checked', false);
+        $("input[name='time-end']").parent().removeClass('focus active');
         $("input[name='time']").attr('disabled', false);
         $("input[name='time']").parent().removeClass('disabled');
         $("input[name='time']").parent().show();
         $("input[name='time']").parent().find('span').text("");
+        $("input[name='time-end']").attr('disabled', false);
+        $("input[name='time-end']").parent().removeClass('disabled');
+        $("input[name='time-end']").parent().show();
+        $("input[name='time-end']").parent().find('span').text("");
         datestr = e.date.format('YYYY-MM-DD');
         current_bookings = [];
         // console.log(e.date.format('YYYY-MM-DD'));
@@ -234,8 +263,10 @@
                     current_bookings.forEach(booking => {
                         if (parseInt(booking.start_time.split(':')[0]) == parseInt($(this).val()))
                         {
+                            {% if user.is_superuser == false %}
                             $(this).attr('disabled', true);
                             $(this).parent().addClass('disabled');
+                            {% endif %}
                             $(this).parent().find('span').text(` (${users[booking.booking_user_id]})`);
                             // $(this).parent().hide();
                         }
@@ -243,23 +274,71 @@
                 })
             }
         });
-        $('#no-date-message').hide();
+        $('.no-date-message').hide();
+    });
+
+
+    var datestr_end = "";
+    $('#calendar-end').on('change.datetimepicker', function (e) {
+        $("input[name='time-end']").attr('disabled', false);
+        $("input[name='time-end']").parent().removeClass('disabled');
+        $("input[name='time-end']").parent().show();
+        $("input[name='time-end']").parent().find('span').text("");
+        datestr_end = e.date.format('YYYY-MM-DD');
+        current_bookings = [];
+        // console.log(e.date.format('YYYY-MM-DD'));
+        bookings.forEach(booking => {
+            if (datestr_end == booking.date)
+            {
+                current_bookings.push(booking);
+                $("input[name='time-end']").each(function (i) {
+                    current_bookings.forEach(booking => {
+                        if (parseInt(booking.start_time.split(':')[0]) == parseInt($(this).val()))
+                        {
+                            {% if user.is_superuser == false %}
+                            $(this).attr('disabled', true);
+                            $(this).parent().addClass('disabled');
+                            {% endif %}
+                            $(this).parent().find('span').text(` (${users[booking.booking_user_id]})`);
+                            // $(this).parent().hide();
+                        }
+                    });
+                })
+            }
+        });
+
+        if(datestr_end == datestr)
+        {
+            var selected_time = $('input[name="time"]:checked').val();
+            $(`input[name='time-end'][value='${selected_time}'`).parent().click();
+            $(`input[name='time-end']`).each(function (i) {
+                if (parseInt(this.value) < selected_time)
+                {
+                    $(this).attr('disabled', true);
+                    $(this).parent().addClass('disabled');
+                }
+            });
+        }
+        $('.no-date-message-end').hide();
     });
     $('#room').on('change', function (e) {
         $.ajax({
             url: "/api/rooms/" + e.target.value,
             dataType: 'json',
             success: function (data) {
+
+                {% if user.is_superuser == false %}
                 $('#calendar').data('datetimepicker').maxDate(end)
+                $('#calendar-end').data('datetimepicker').maxDate(end)                
+                {% endif %}
+
                 duration = data.room.session_duration;
                 bookings = data.booking;
                 new_users = {};
                 data.users.forEach(user => {
                     new_users[user.id] = user.username;
                 });
-                console.log(new_users);
                 users = new_users;
-                console.log(users);
                 sessions = Math.floor(10 / data.room.session_duration);
                 time_slots = [];
                 for (i = 0; i < sessions; i++)
@@ -267,7 +346,8 @@
                     time_slots.push(i * data.room.session_duration + 8);
                 }
                 // set select to value of array
-                $('#time').empty();
+                $('.time').empty();
+                $('.time-end').empty();
                 $('#taken-slots').empty();
                 for (i = 0; i < time_slots.length; i++)
                 {
@@ -282,13 +362,24 @@
 
                         }
                     });
-                    $('#time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
+                    $('.time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
+                    $('.time-end').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time-end" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
                 }
-                $('#no-room-message').hide();
-                $("input[name='time']").attr('disabled', true);
-                $("input[name='time']").parent().addClass('disabled');
-                $("input[name='time']").parent().hide();
-                $('#no-date-message').show();
+                $('.no-room-message').hide();
+                if(datestr == "")
+                {
+                    $("input[name='time']").attr('disabled', true);
+                    $("input[name='time']").parent().addClass('disabled');
+                    $("input[name='time']").parent().hide();
+                    $('.no-date-message').show();
+                }
+                if(datestr_end == "")
+                {
+                    $("input[name='time-end']").attr('disabled', true);
+                    $("input[name='time-end']").parent().addClass('disabled');
+                    $("input[name='time-end']").parent().hide();
+                    $('.no-date-message-end').show();
+                }
             }
         });
     });
@@ -311,6 +402,21 @@
                 }
             });
         }
+    });
+
+    $(document).on('change', '[name=time]', function (e) {
+        if(datestr != datestr_end) return;
+        $(`input[name='time-end']`).attr('disabled', false);
+        $(`input[name='time-end']`).parent().removeClass('disabled');
+        var selected_time = this.value;
+        $(`input[name='time-end'][value='${this.value}'`).parent().click();
+        $(`input[name='time-end']`).each(function (i) {
+            if (parseInt(this.value) < selected_time)
+            {
+                $(this).attr('disabled', true);
+                $(this).parent().addClass('disabled');
+            }
+        });
     });
 
     $(document).on('click', '.delete-booking', function (e) {

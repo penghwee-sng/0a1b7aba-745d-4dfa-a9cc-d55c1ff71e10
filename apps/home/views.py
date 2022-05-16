@@ -57,7 +57,7 @@ def api(request, name, id=None):
 
             users = list(get_user_model().objects.all().values('id','username'))
             room = list(Room.objects.filter(room_id=id).values())[0]
-            booking = list(Booking.objects.select_related('booking_user_id').filter(booking_room_id=id, date__gte=datetime.now(), date__lte=datetime.now()+timedelta(days=14)).values())
+            booking = list(Booking.objects.select_related('booking_user_id').filter(booking_room_id=id, date__gte=datetime.now(), date__lte=datetime.now()+timedelta(days=28)).values())
             return JsonResponse({
                 'room': room, 
                 'booking':booking,
