@@ -57,22 +57,40 @@ def api(request, name, id=None):
 
             users = list(get_user_model().objects.all().values('id','username'))
             room = list(Room.objects.filter(room_id=id).values())[0]
-            booking = list(Booking.objects.select_related('booking_user_id').filter(booking_room_id=id, date__gte=datetime.now(), date__lte=datetime.now()+timedelta(days=28)).values())
+            booking = list(Booking.objects.select_related('booking_user_id').filter(booking_room_id=id, datetime_start__gte=datetime.now(), datetime_end__lte=datetime.now()+timedelta(days=28)).values())
             return JsonResponse({
                 'room': room, 
                 'booking':booking,
                 'users':users
             }, safe=False)
+            
     if name == 'bookings':
         if request.method == 'POST':
             data = request.POST
-            Booking.objects.create(date=data['date'], start_time=f"{data['time']}:00", end_time=f"{data['endtime']}:00", booking_room_id=data['room_id'], booking_user_id=request.user.id)
+            Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'], booking_room_id=data['room_id'], booking_user_id=request.user.id)
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:
-                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, date__gte=datetime.now()).order_by('date').values()), safe=False)
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=datetime.now()).order_by('datetime_start').values()), safe=False)
+        if request.method == 'DELETE':
+            if id is not None:
+                Booking.objects.filter(booking_id=id, booking_user_id=request.user.id).delete()
+                return JsonResponse({'status': 'success'}, safe=False)
+
+    if name == 'blockings':
+        if request.method == 'POST':
+            data = request.POST
+            Booking.objects.create(date=data['date'], enddate=data['enddate'], start_time=f"{data['time']}:00", end_time=f"{data['endtime']}:00", booking_room_id=data['room_id'], booking_user_id=request.user.id)
+            return JsonResponse({'status': 'success'}, safe=False)
+        if request.method == 'GET':
+            if id is None:
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=datetime.now()).order_by('datetime_start').values()), safe=False)
         if request.method == 'DELETE':
             if id is not None:
                 Booking.objects.filter(booking_id=id, booking_user_id=request.user.id).delete()
                 return JsonResponse({'status': 'success'}, safe=False)
     return JsonResponse({'name': name})
+
+def get_blocked_bookings(request, start_date, start_time, end_date, end_time, room_id):
+    bookings = Booking.objects.filter(date__gte=start_date, date__lte=end_date, booking_room_id=room_id)
+    return JsonResponse(list(bookings.values()), safe=False)
