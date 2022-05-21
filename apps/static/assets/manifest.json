@@ -2,7 +2,7 @@
 	"name": "Training Booking System",
 	"short_name": "Training Booking System",
 	"display": "standalone",
-	"start_url": "/",
+	"start_url": "https://training-booking-system.herokuapp.com/",
 	"scope": ".",
 	"theme_color": "#000",
 	"background_color": "#000",
