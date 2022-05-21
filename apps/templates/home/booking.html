@@ -478,6 +478,7 @@
         {% if user.is_superuser %}
         
         var room = $('input[name=room]:checked').val();
+        var room_name = $('input[name=room]:checked').parent().text();
         var time = $('input[name=time]:checked').val();
         var data = {
             room_id: room,
@@ -487,7 +488,7 @@
 
         if (room && start_datestr != '' && end_datestr != '')
         {            
-            if(!confirm("Are you sure you want to book this room?")) 
+            if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}? All bookings in the range will be deleted!`)) 
             {
                 return;
             }
@@ -515,6 +516,7 @@
         }        
         {% else %}
         var room = $('input[name=room]:checked').val();
+        var room_name = $('input[name=room]:checked').parent().text();
         var time = $('input[name=time]:checked').val();
         var endtime = parseInt(time) + parseInt(duration);
         var data = {
@@ -525,7 +527,7 @@
 
         if (room && time)
         {            
-            if(!confirm("Are you sure you want to book this room?")) 
+            if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}?`)) 
             {
                 return;
             }
