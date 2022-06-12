@@ -26,7 +26,7 @@
 	<!-- Javscript -->
 	<script>
 		if ("serviceWorker" in navigator) {
-			window.addEventListener("load", () => {
+			window.addEventListener("load", () => { 
 				navigator.serviceWorker && navigator.serviceWorker.register("/static/assets/sw.js");
 			});
 		}
