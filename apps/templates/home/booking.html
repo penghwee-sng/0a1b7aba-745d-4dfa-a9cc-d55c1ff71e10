@@ -1,6 +1,4 @@
-{% extends "layouts/base.html" %}
-
-{% block title %} Booking {% endblock %}
+{% extends "layouts/base.html" %} {% block title %} Booking {% endblock %}
 
 <!-- Element injected in the BODY element -->
 {% block body_class %} sidebar-collapse layout-top-nav {% endblock body_class %}
@@ -9,146 +7,176 @@
 {% block stylesheets %}
 
 <!-- Google Font: Source Sans Pro -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"
+/>
 <!-- Font Awesome -->
-<link rel="stylesheet" href="/static/assets/plugins/fontawesome-free/css/all.min.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/fontawesome-free/css/all.min.css"
+/>
 <!-- Ionicons -->
-<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<link
+  rel="stylesheet"
+  href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
+/>
 <!-- Tempusdominus Bootstrap 4 -->
-<link rel="stylesheet" href="/static/assets/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css"
+/>
 <!-- iCheck -->
-<link rel="stylesheet" href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css"
+/>
 <!-- JQVMap -->
-<link rel="stylesheet" href="/static/assets/plugins/jqvmap/jqvmap.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/jqvmap/jqvmap.min.css" />
 <!-- Theme style -->
-<link rel="stylesheet" href="/static/assets/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/assets/css/adminlte.min.css" />
 <!-- overlayScrollbars -->
-<link rel="stylesheet" href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css"
+/>
 <!-- Daterange picker -->
-<link rel="stylesheet" href="/static/assets/plugins/daterangepicker/daterangepicker.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/daterangepicker/daterangepicker.css"
+/>
 <!-- summernote -->
-<link rel="stylesheet" href="/static/assets/plugins/summernote/summernote-bs4.min.css">
+<link
+  rel="stylesheet"
+  href="/static/assets/plugins/summernote/summernote-bs4.min.css"
+/>
 <!-- Toastr -->
-<link rel="stylesheet" href="/static/assets/plugins/toastr/toastr.min.css">
+<link rel="stylesheet" href="/static/assets/plugins/toastr/toastr.min.css" />
 
 <style>
-    .bootstrap-datetimepicker-widget table td.day {
-        font-weight: bold;
-    }
+  .bootstrap-datetimepicker-widget table td.day {
+    font-weight: bold;
+  }
 
-    .bootstrap-datetimepicker-widget table td.disabled,
-    .bootstrap-datetimepicker-widget table td.disabled:hover {
-        font-weight: normal;
-        color: #dbdbdb;
-    }
+  .bootstrap-datetimepicker-widget table td.disabled,
+  .bootstrap-datetimepicker-widget table td.disabled:hover {
+    font-weight: normal;
+    color: #dbdbdb;
+  }
 
-    #room .btn-sm,
-    .time .btn-sm,
-    .time-end .btn-sm {
-        margin-right: 10px;
-        margin-bottom: 10px;
-    }
+  #room .btn-sm,
+  .time .btn-sm,
+  .time-end .btn-sm {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
 
-    #booked-slots {
-        margin-top: 20px;
-    }
+  #booked-slots {
+    margin-top: 20px;
+  }
 
-    #booked-slots p {
-        margin-bottom: 10px;
-    }
-    .delete-booking {
-        color: red;
-        cursor: pointer;
-    }
-    .no-bookings-message {
-        text-align: center;
-        padding: 20px;
-    }
+  #booked-slots p {
+    margin-bottom: 10px;
+  }
+  .delete-booking {
+    color: red;
+    cursor: pointer;
+  }
+  .no-bookings-message {
+    text-align: center;
+    padding: 20px;
+  }
+  .bit-blocked {
+    position: relative;
+  }
+  .bit-blocked::after {
+    content: "";
+    display: block;
+    width: 5px;
+    height: 5px;
+    background-color: #F45B69;
+    position: absolute;
+    border-radius: 50%;
+    top: 2px;
+    right: 5px;
+}
 </style>
 
-{% endblock stylesheets %}
-
-{% block content %}
+{% endblock stylesheets %} {% block content %}
 
 <div class="content-wrapper">
-    <!-- /.content-header -->
+  <!-- /.content-header -->
 
-    <!-- Main content -->
-    <div class="content">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-6 offset-lg-3">
-                    <h4 class="mb-2 mt-4">Book a Room</h4>
-                    <div class="card">
-                        <div class="card-body">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label>Room</label>
-                                <div class="btn-group-toggle" data-toggle="buttons" id="room">
-                                </div>
-                            </div>
-                            <div id="form-collapsed" class="collapse">
-                                {% if user.is_superuser %}
-                                <h4 class="text-center">From</h4>
-                                {% endif %}
-                                <div class="form-group">
-                                    <label>Date</label>
-                                    <div id="calendar" style="width: 100%"></div>
-                                </div>                                
-                                {% if user.is_superuser %}
-                                {% else %}
-                                <div class="form-group">
-                                    <label>Time</label>
-                                    <div class="text-center no-room-message">Select a room</div>
-                                    <div class="text-center no-date-message" style="display:none;">Pick a date
-                                    </div>
-                                    <div class="btn-group-toggle time" data-toggle="buttons">
-                                    </div>
-                                </div>
-                                {% endif %}
-                                {% if user.is_superuser %}
-                                <hr>
-                                <h4 class="text-center">To</h4>
-                                <div class="form-group">
-                                    <label>Date</label>
-                                    <div id="calendar-end" style="width: 100%">
-                                    </div>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                        </div>
-                        <div class="card-footer">
-                            <button id="submit" type="button" class="btn btn-primary btn-block">Book Now</button>
-                        </div>
-                        <!-- /.card-body -->
-                    </div>
-                    <h4 class="mb-2 mt-4">My Bookings</h4>
-                    <div class="card">
-                        <!-- /.card-header -->
-                        <div class="card-body p-0">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Room</th>
-                                        <th class="text-right">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="my-bookings">
-                                </tbody>
-                            </table>
-                            <div class="text-center no-bookings-message">No bookings</div>
-                        </div>
-                        <!-- /.card-body -->
-                    </div>
-                </div>
-                <!-- /.col-md-6 -->
+  <!-- Main content -->
+  <div class="content">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 offset-lg-3">
+          <h4 class="mb-2 mt-4">Book a Room</h4>
+          <div class="card">
+            <div class="card-body">
+              {% csrf_token %} {% if user.is_superuser %}
+              <h4 class="text-center">From</h4>
+              {% endif %}
+              <div class="form-group">
+                <label>Date</label>
+                <div id="calendar" style="width: 100%"></div>
+              </div>
+              {% if user.is_superuser %} {% else %}
+              <div class="form-group">
+                <label>Training</label>
+                <div
+                  class="btn-group-toggle"
+                  data-toggle="buttons"
+                  id="room"
+                ></div>
+              </div>
+              {% endif %} {% if user.is_superuser %}
+              <hr />
+              <h4 class="text-center">To</h4>
+              <div class="form-group">
+                <label>Date</label>
+                <div id="calendar-end" style="width: 100%"></div>
+              </div>
+              {% endif %}
             </div>
-            <!-- /.row -->
-        </div><!-- /.container-fluid -->
+            <div class="card-footer">
+              <button
+                id="submit"
+                type="button"
+                class="btn btn-primary btn-block"
+              >
+                Book Now
+              </button>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <h4 class="mb-2 mt-4">My Bookings</h4>
+          <div class="card">
+            <!-- /.card-header -->
+            <div class="card-body p-0">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Room</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="my-bookings"></tbody>
+              </table>
+              <div class="text-center no-bookings-message">No bookings</div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+        </div>
+        <!-- /.col-md-6 -->
+      </div>
+      <!-- /.row -->
     </div>
-    <!-- /.content -->
+    <!-- /.container-fluid -->
+  </div>
+  <!-- /.content -->
 </div>
 
 {% endblock content %}
@@ -164,7 +192,7 @@
 <script src="/static/assets/plugins/jquery-ui/jquery-ui.min.js"></script>
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <script>
-    $.widget.bridge('uibutton', $.ui.button)
+  $.widget.bridge("uibutton", $.ui.button);
 </script>
 <!-- Bootstrap 4 -->
 <script src="/static/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -194,369 +222,348 @@
 <script src="/static/assets/plugins/moment/moment.min.js"></script>
 
 <script>
-    // function to convert time string to format HH:MM
-    function convertTime(time) {
-        var ampm = "am";
-        var time_array = time.split(":");
-        var hour = parseInt(time_array[0]);
-        if (hour > 12)
-        {
-            hour = hour - 12;
-            ampm = "pm";
-        }
-        var minute = time_array[1];
-        var time_str = hour + ":" + minute + ampm;
-        return time_str;
-    }
+  // function to convert time string to format HH:MM
+  function convertTime(time) {
+      var ampm = "am";
+      var time_array = time.split(":");
+      var hour = parseInt(time_array[0]);
+      if (hour > 12)
+      {
+          hour = hour - 12;
+          ampm = "pm";
+      }
+      var minute = time_array[1];
+      var time_str = hour + ":" + minute + ampm;
+      return time_str;
+  }
 
-    function convertLocaleString(time) {
-        var ampm = time.split(" ")[1].toLowerCase();
-        var time_array = time.split(":");
-        var hour = parseInt(time_array[0]);
-        var minute = time_array[1];
-        var time_str = hour + ":" + minute + ampm;
-        return time_str;
-    }
+  function convertLocaleString(time) {
+      var ampm = time.split(" ")[1].toLowerCase();
+      var time_array = time.split(":");
+      var hour = parseInt(time_array[0]);
+      var minute = time_array[1];
+      var time_str = hour + ":" + minute + ampm;
+      return time_str;
+  }
 
-    function convertDate(date) {
-        var date_array = date.split("-");
-        var year = date_array[0];
-        var month = date_array[1];
-        var day = date_array[2];
-        var date_str = day + "/" + month + "/" + year.slice(-2);
-        return date_str;
-    }
+  function convertDate(date) {
+      var date_array = date.split("-");
+      var year = date_array[0];
+      var month = date_array[1];
+      var day = date_array[2];
+      var date_str = day + "/" + month + "/" + year.slice(-2);
+      return date_str;
+  }
+
+  var superadmin_id = 3;
+  var bitadmin_id = 1
+  var start_datestr = "";
+  var end_datestr = "";
+  var duration = 0;
+  var bookings = [];
+  var current_bookings = [];
+  var users = [];
+  var rooms = {};
+  var now = new Date();
+  // date one week later
+  var end = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
+
+  var disabled_bit = [];
+  var disabled_all = [];
 
 
-    var start_datestr = "";
-    var duration = 0;
-    var bookings = [];
-    var current_bookings = [];
-    var users = [];
-    var rooms = {};
-    var now = new Date();
-    // date one week later
-    var end = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
-    $('#calendar, #calendar-end').datetimepicker({
-        format: 'L',
-        inline: true,
-        minDate: now,
-        daysOfWeekDisabled: [0, 6]
-    })
-    $('#calendar').on('change.datetimepicker', function (e) {   
-        $('#calendar-end').datetimepicker('minDate', e.date);
-        $("input[name='time']").attr('checked', false);
-        $("input[name='time']").parent().removeClass('focus active');
-        $("input[name='time-end']").attr('checked', false);
-        $("input[name='time-end']").parent().removeClass('focus active');
-        $("input[name='time']").attr('disabled', false);
-        $("input[name='time']").parent().removeClass('disabled');
-        $("input[name='time']").parent().show();
-        $("input[name='time']").parent().find('span').text("");
-        $("input[name='time-end']").attr('disabled', false);
-        $("input[name='time-end']").parent().removeClass('disabled');
-        $("input[name='time-end']").parent().show();
-        $("input[name='time-end']").parent().find('span').text("");
-        start_datestr = e.date.format('YYYY-MM-DD');
-        current_bookings = [];
-        // console.log(e.date.format('YYYY-MM-DD'));
-        bookings.forEach(booking => {
-            if (start_datestr == moment(booking.datetime_start).format('YYYY-MM-DD'))
-            {
-                current_bookings.push(booking);
-                $("input[name='time']").each(function (i) {
-                    current_bookings.forEach(booking => {
-                        var time_start = moment(booking.datetime_start).hour();
-                        if (time_start == parseInt($(this).val()))
-                        {
-                            console.log('test1')
-                            {% if user.is_superuser %}
-                            {% else %}
-                            console.log('test2')
-                            $(this).attr('disabled', true);
-                            $(this).parent().addClass('disabled');
-                            {% endif %}
-                            $(this).parent().find('span').text(` (${users[booking.booking_user_id]})`);
-                            // $(this).parent().hide();
-                        }
-                    });
-                })
+  // Initialize Calendars
+  $('#calendar, #calendar-end').datetimepicker({
+      format: 'L',
+      inline: true,
+      minDate: now,
+      daysOfWeekDisabled: [0, 6]
+  })
+
+
+  // On Start Calendar Change
+  $('#calendar').on('change.datetimepicker', function (e) {
+      $('#calendar-end')?.datetimepicker('minDate', e.date);
+      start_datestr = e.date.format('YYYY-MM-DD');
+  });
+
+
+  // On End Calendar Change
+  $('#calendar-end').on('change.datetimepicker', function (e) {
+      end_datestr = e.date.format('YYYY-MM-DD');
+  });
+
+
+  // Get Rooms and block dates on Calendar
+  $.ajax({
+      url: "/api/all/",
+      dataType: 'json',
+      success: function (data) {
+          // Populate users
+          data.users.forEach(user => {
+              users[user.id] = user.username;
+              if (user.username == "bitadmin")
+                  bitadmin_id = user.id;
+              if (user.username == "superadmin")
+                  superadmin_id = user.id;
+          });
+
+          // Populate rooms
+          data.rooms.forEach(room => {
+            rooms[room.room_id] = room.room_name;
+            if (room.scenarios == 0) {
+              $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=0 disabled>${room.room_name}</label>`)
             }
-        });
-        $('.no-date-message').hide();
-    });
-
-
-    var end_datestr = "";
-    $('#calendar-end').on('change.datetimepicker', function (e) {
-        $("input[name='time-end']").attr('disabled', false);
-        $("input[name='time-end']").parent().removeClass('disabled');
-        $("input[name='time-end']").parent().show();
-        $("input[name='time-end']").parent().find('span').text("");
-        end_datestr = e.date.format('YYYY-MM-DD');
-        current_bookings = [];
-        // console.log(e.date.format('YYYY-MM-DD'));
-        bookings.forEach(booking => {
-            if (end_datestr == moment(booking.datetime_start).format('YYYY-MM-DD'))
-            {
-                current_bookings.push(booking);
-                $("input[name='time-end']").each(function (i) {
-                    current_bookings.forEach(booking => {
-                        var time_start = moment(booking.datetime_start).hour();
-                        if (time_start == parseInt($(this).val()))
-                        {
-                            {% if user.is_superuser %}
-                            {% else %}
-                            $(this).attr('disabled', true);
-                            $(this).parent().addClass('disabled');
-                            {% endif %}
-                            $(this).parent().find('span').text(` (${users[booking.booking_user_id]})`);
-                            // $(this).parent().hide();
-                        }
-                    });
-                })
+            else if (room.scenarios > 0) {
+              for (var i = 1; i <= room.scenarios; i++) {
+                $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=${i} disabled>${room.room_name} Scenario ${i}</label>`)
+              }
             }
-        });
+          });
 
-        if(end_datestr == start_datestr)
-        {
-            var selected_time = $('input[name="time"]:checked').val();
-            $(`input[name='time-end'][value='${selected_time}'`).parent().click();
-            $(`input[name='time-end']`).each(function (i) {
-                if (parseInt(this.value) < selected_time)
-                {
-                    $(this).attr('disabled', true);
-                    $(this).parent().addClass('disabled');
-                }
-            });
-        }
-        $('.no-date-message-end').hide();
-    });
-    $('#room').on('change', function (e) {
-        $.ajax({
-            url: "/api/rooms/" + e.target.value,
-            dataType: 'json',
-            success: function (data) {
-                $("#form-collapsed").collapse('show');
-                {% if user.is_superuser %}
-                {% else %}
-                //$('#calendar').data('datetimepicker').maxDate(end)
-                //$('#calendar-end').data('datetimepicker').maxDate(end)                
-                {% endif %}
+          // Block dates
+          data.bookings.forEach(booking => {
+              if (booking.booking_user_id == superadmin_id || booking.booking_user_id == bitadmin_id)
+              {
+                  let start_date = moment(booking.datetime_start);
+                  let end_date = moment(booking.datetime_end);
 
-                duration = data.room.session_duration;
-                bookings = data.booking;
+                  for (var m = moment(start_date); m.isBefore(end_date); m.add(1, 'days')) {
+                      if (booking.booking_user_id == superadmin_id)
+                          disabled_all.push(moment(m));
+                      else
+                          disabled_bit.push(moment(m));
+                  }
+              }
+          });
+          $('#calendar').data('datetimepicker').disabledDates(disabled_all);
+          $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_all);
 
-                let disabled_dates = [];
-                bookings.forEach(booking => {
-                    if (booking.booking_user_id == 1)
-                    {
-                        let start_date = moment(booking.datetime_start);
-                        let end_date = moment(booking.datetime_end);
+          // Show indicator for dates where BIT is blocked
+          {% if user.is_superuser %}
+          {% else %}
+          disabled_bit.forEach(function(date) {
+            $(`[data-day="${date.format('MM-DD-YYYY')}"]`).addClass('bit-blocked');
+            console.log(date.format('MM-DD-YYYY'));
+          });
+          {% endif %}
 
-                        for (var m = moment(start_date); m.isBefore(end_date); m.add(1, 'days')) {
-                            disabled_dates.push(moment(m));
-                        }
-                    }
-                });
-                
-                $('#calendar').data('datetimepicker').disabledDates(disabled_dates);
-                $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_dates);
-
-                new_users = {};
-                data.users.forEach(user => {
-                    new_users[user.id] = user.username;
-                });
-                users = new_users;
-                sessions = Math.floor(10 / data.room.session_duration);
-                time_slots = [];
-                for (i = 0; i < sessions; i++)
-                {
-                    time_slots.push(i * data.room.session_duration + 8);
-                }
-                // set select to value of array
-                $('.time').empty();
-                $('.time-end').empty();
-                for (i = 0; i < time_slots.length; i++)
-                {
-                    date = new Date(0);
-                    date.setHours(time_slots[i]);
-                    date.setMinutes(0);
-                    var disabled = false;
-                    current_bookings.forEach(booking => {
-                        if (booking.moment(booking.datetime_start).hour() == time_slots[i])
-                        {
-                            disabled = true;
-
-                        }
-                    });
-                    $('.time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
-                    $('.time-end').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time-end" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
-                }
-                $('.no-room-message').hide();
-                $("input[name='time']").attr('disabled', true);
-                $("input[name='time']").parent().addClass('disabled');
-                $("input[name='time']").parent().hide();
-                $('.no-date-message').show();
-            }
-        });
-    });
-    $.ajax({
-        url: "/api/rooms/",
-        dataType: 'json',
-        success: function (rdata) {
-            rdata.forEach(d => {
-                rooms[d.room_id] = d.room_name;
-                $('#room').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="room" value="' + d.room_id + '">' + d.room_name + '</label>')
-            });
-
-            $.ajax({
-                url: "/api/bookings/",
-                dataType: 'json',
-                success: function (data) {
-                    data.forEach(d => {
-                        {% if user.is_superuser %}
-                        $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
-                        {% else %}
-                        $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY, h:mm a')} - ${moment(d.datetime_end).format('h:mm a')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
-                        {% endif %}
-                        $('.no-bookings-message').hide();
-                    });
-                }
-            });
-        }
-    });
-
-    $(document).on('change', '[name=time]', function (e) {
-        if(start_datestr != end_datestr) return;
-        $(`input[name='time-end']`).attr('disabled', false);
-        $(`input[name='time-end']`).parent().removeClass('disabled');
-        var selected_time = this.value;
-        $(`input[name='time-end'][value='${this.value}'`).parent().click();
-        $(`input[name='time-end']`).each(function (i) {
-            if (parseInt(this.value) < selected_time)
-            {
-                $(this).attr('disabled', true);
-                $(this).parent().addClass('disabled');
-            }
-        });
-        $('#submit').attr('disabled', false)
-    });
-
-    $(document).on('click', '.delete-booking', function (e) {
-        if (!confirm('Are you sure you want to delete this booking?'))
-        {
-            return;
-        }
-        var id = $(this).data('id');
-        var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
-        $.ajaxSetup({
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-CSRFToken', token);
-            }
-        });
-        $.ajax({
-            url: "/api/bookings/" + id,
-            type: 'DELETE',
-            success: function (data) {
-                $('i[data-id='+id+']').parent().parent().remove();
-                if ($('#my-bookings tr').length == 0)
-                {
-                    $('.no-bookings-message').show();
-                }
-            }
-        });
-    });
-    $('#submit').on('click', function (e) {     
-        e.preventDefault();   
-        var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
-        $.ajaxSetup({
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader('X-CSRFToken', token);
-            }
-        });
-        {% if user.is_superuser %}
-        
-        var room = $('input[name=room]:checked').val();
-        var room_name = $('input[name=room]:checked').parent().text();
-        var time = $('input[name=time]:checked').val();
-        var data = {
-            room_id: room,
-            datetime_start: `${start_datestr} 00:00`,
-            datetime_end: `${end_datestr} 23:59`,
-        };
-
-        if (room && start_datestr != '' && end_datestr != '')
-        {            
-            if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}? All bookings in the range will be deleted!`)) 
-            {
-                return;
-            }
-            $('#submit').attr('disabled', true).text('Sending...');
-            $.ajax({
-                url: "/api/bookings/",
-                type: "POST",
-                data: data,
-                success: function (data) {
-                    console.log(data);
-                    toastr.success('Booking has been made successfully.')
-                    $('#submit').attr('disabled', true).text('Booking Successful');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                },
-                error: function (data) {
-                    toastr.error('Timeslot is unavailable. Please choose another one.')
-                    $('#submit').attr('disabled', false).text('Book Now');
-                }
-            });
-        } else
-        {
-            toastr.error('Please select a room , start date and end date.')
-        }        
-        {% else %}
-        var room = $('input[name=room]:checked').val();
-        var room_name = $('input[name=room]:checked').parent().text();
-        var time = $('input[name=time]:checked').val();
-        var endtime = parseInt(time) + parseInt(duration);
-        var data = {
-            room_id: room,
-            datetime_start: `${start_datestr} ${time}:00`,
-            datetime_end: `${start_datestr} ${endtime}:00`,
-        };
-
-        if (room && time)
-        {            
-            if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}?`)) 
-            {
-                return;
-            }
-            $('#submit').attr('disabled', true).text('Sending...');
-            $.ajax({
-                url: "/api/bookings/",
-                type: "POST",
-                data: data,
-                success: function (data) {
-                    console.log(data);
-                    toastr.success('Booking has been made successfully.')
-                    $('#submit').attr('disabled', true).text('Booking Successful');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                },
-                error: function (data) {
-                    toastr.error('Timeslot is unavailable. Please choose another one.')
-                    $('#submit').attr('disabled', false).text('Book Now');
-                }
-            });
-        } else
-        {
-            toastr.error('Please select a date, room, and time.')
-        }        
-        {% endif %}
-    });
+          // Auto select first date
+          $('td.day.active').click();
+      }
+  });
 
 
+  // Get Scenario
+  $('#room').on('change', function (e) {
+      $.ajax({
+          url: "/api/rooms/",
+          dataType: 'json',
+          success: function (data) {
+              // Populate Users
+              data.users.forEach(user => {
+                  users[user.id] = user.username;
+                  if (user.username == "admin")
+                      bitadmin_id = user.id;
+                  if (user.username == "superadmin")
+                      superadmin_id = user.id;
+              });
+
+              data.bookings.forEach(booking => {
+                  if (booking.booking_user_id == superadmin_id || booking.booking_user_id == bitadmin_id)
+                  {
+                      let start_date = moment(booking.datetime_start);
+                      let end_date = moment(booking.datetime_end);
+
+                      for (var m = moment(start_date); m.isBefore(end_date); m.add(1, 'days')) {
+                          if (booking.booking_user_id == superadmin_id)
+                              disabled_all.push(moment(m));
+                          else
+                              disabled_bit.push(moment(m));
+                      }
+                  }
+              });
+
+              $('#calendar').data('datetimepicker').disabledDates(disabled_all);
+              $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_all);
+
+              sessions = Math.floor(10 / data.room.session_duration);
+              time_slots = [];
+              for (i = 0; i < sessions; i++)
+              {
+                  time_slots.push(i * data.room.session_duration + 8);
+              }
+              // set select to value of array
+              $('.time').empty();
+              $('.time-end').empty();
+              for (i = 0; i < time_slots.length; i++)
+              {
+                  date = new Date(0);
+                  date.setHours(time_slots[i]);
+                  date.setMinutes(0);
+                  var disabled = false;
+                  current_bookings.forEach(booking => {
+                      if (booking.moment(booking.datetime_start).hour() == time_slots[i])
+                      {
+                          disabled = true;
+
+                      }
+                  });
+                  $('.time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
+                  $('.time-end').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time-end" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
+              }
+              $('.no-room-message').hide();
+              $("input[name='time']").attr('disabled', true);
+              $("input[name='time']").parent().addClass('disabled');
+              $("input[name='time']").parent().hide();
+              $('.no-date-message').show();
+          }
+      });
+  });
+
+  $.ajax({
+      url: "/api/bookings/",
+      dataType: 'json',
+      success: function (data) {
+          data.forEach(d => {
+              {% if user.is_superuser %}
+              $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
+              {% else %}
+              $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY, h:mm a')} - ${moment(d.datetime_end).format('h:mm a')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
+              {% endif %}
+              $('.no-bookings-message').hide();
+          });
+      }
+  });
+
+  $(document).on('change', '[name=time]', function (e) {
+      if(start_datestr != end_datestr) return;
+      $(`input[name='time-end']`).attr('disabled', false);
+      $(`input[name='time-end']`).parent().removeClass('disabled');
+      var selected_time = this.value;
+      $(`input[name='time-end'][value='${this.value}'`).parent().click();
+      $(`input[name='time-end']`).each(function (i) {
+          if (parseInt(this.value) < selected_time)
+          {
+              $(this).attr('disabled', true);
+              $(this).parent().addClass('disabled');
+          }
+      });
+      $('#submit').attr('disabled', false)
+  });
+
+  $(document).on('click', '.delete-booking', function (e) {
+      if (!confirm('Are you sure you want to delete this booking?'))
+      {
+          return;
+      }
+      var id = $(this).data('id');
+      var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
+      $.ajaxSetup({
+          beforeSend: function (xhr) {
+              xhr.setRequestHeader('X-CSRFToken', token);
+          }
+      });
+      $.ajax({
+          url: "/api/bookings/" + id,
+          type: 'DELETE',
+          success: function (data) {
+              $('i[data-id='+id+']').parent().parent().remove();
+              if ($('#my-bookings tr').length == 0)
+              {
+                  $('.no-bookings-message').show();
+              }
+          }
+      });
+  });
+  $('#submit').on('click', function (e) {
+      e.preventDefault();
+      var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
+      $.ajaxSetup({
+          beforeSend: function (xhr) {
+              xhr.setRequestHeader('X-CSRFToken', token);
+          }
+      });
+      {% if user.is_superuser %}
+
+      var room = $('input[name=room]:checked').val();
+      var room_name = $('input[name=room]:checked').parent().text();
+      var time = $('input[name=time]:checked').val();
+      var data = {
+          room_id: room,
+          datetime_start: `${start_datestr} 00:00`,
+          datetime_end: `${end_datestr} 23:59`,
+      };
+
+      if (start_datestr != '' && end_datestr != '')
+      {
+          if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}? All bookings in the range will be deleted!`))
+          {
+              return;
+          }
+          $('#submit').attr('disabled', true).text('Sending...');
+          $.ajax({
+              url: "/api/bookings/",
+              type: "POST",
+              data: data,
+              success: function (data) {
+                  console.log(data);
+                  toastr.success('Booking has been made successfully.')
+                  $('#submit').attr('disabled', true).text('Booking Successful');
+                  setTimeout(() => {
+                      location.reload();
+                  }, 1500);
+              },
+              error: function (data) {
+                  toastr.error('Timeslot is unavailable. Please choose another one.')
+                  $('#submit').attr('disabled', false).text('Book Now');
+              }
+          });
+      } else
+      {
+          toastr.error('Please select a room , start date and end date.')
+      }
+      {% else %}
+      var room = $('input[name=room]:checked').val();
+      var room_name = $('input[name=room]:checked').parent().text();
+      var time = $('input[name=time]:checked').val();
+      var endtime = parseInt(time) + parseInt(duration);
+      var data = {
+          room_id: room,
+          datetime_start: `${start_datestr} 00:00`,
+          datetime_end: `${start_datestr} 23:59`,
+      };
+
+      if (room)
+      {
+          if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}?`))
+          {
+              return;
+          }
+          $('#submit').attr('disabled', true).text('Sending...');
+          $.ajax({
+              url: "/api/bookings/",
+              type: "POST",
+              data: data,
+              success: function (data) {
+                  console.log(data);
+                  toastr.success('Booking has been made successfully.')
+                  $('#submit').attr('disabled', true).text('Booking Successful');
+                  setTimeout(() => {
+                      location.reload();
+                  }, 1500);
+              },
+              error: function (data) {
+                  toastr.error('Timeslot is unavailable. Please choose another one.')
+                  $('#submit').attr('disabled', false).text('Book Now');
+              }
+          });
+      } else
+      {
+          toastr.error('Please select a date, room, and time.')
+      }
+      {% endif %}
+  });
 </script>
 
 {% endblock javascripts %}

@@ -4,7 +4,7 @@
 	"design": {
 		"ios": {
 			"pictureAspect": "backgroundAndMargin",
-			"backgroundColor": "#000000",
+			"backgroundColor": "#FFFFFF",
 			"margin": "18%",
 			"assets": {
 				"ios6AndPriorIcons": true,
@@ -32,7 +32,7 @@
 		},
 		"androidChrome": {
 			"pictureAspect": "noChange",
-			"themeColor": "#000000",
+			"themeColor": "#FFFFFF",
 			"manifest": {
 				"display": "standalone",
 				"orientation": "notSet",

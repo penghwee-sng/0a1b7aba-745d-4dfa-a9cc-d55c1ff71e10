@@ -3,15 +3,15 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+from datetime import timedelta
 from django import template
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.urls import reverse
-from .models import Room, Booking
-from datetime import datetime, timedelta
-from django.core import serializers
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from .models import Room, Booking
 
 
 @login_required(login_url="/login/")
@@ -49,9 +49,18 @@ def pages(request):
 
 
 def api(request, name, id=None):
+    if name == 'all':
+        return JsonResponse({
+            'rooms': list(Room.objects.values()),
+            'bookings': list(Booking.objects.select_related('booking_user_id').filter(datetime_start__gte=timezone.now()).values()),
+            'users': list(get_user_model().objects.all().values('id', 'username'))
+        }, safe=False)
     if name == 'rooms':
         if id is None:
-            return JsonResponse(list(Room.objects.values()), safe=False)
+            return JsonResponse({
+                'rooms': list(Room.objects.values())
+            }, safe=False)
+
         else:
             # get all users
 
@@ -59,7 +68,7 @@ def api(request, name, id=None):
                 get_user_model().objects.all().values('id', 'username'))
             room = list(Room.objects.filter(room_id=id).values())[0]
             booking = list(Booking.objects.select_related('booking_user_id').filter(
-                booking_room_id=id, datetime_start__gte=datetime.now(), datetime_end__lte=datetime.now()+timedelta(days=28)).values())
+                booking_room_id=id, datetime_start__gte=timezone.now(), datetime_end__lte=timezone.now()+timedelta(days=28)).values())
             return JsonResponse({
                 'room': room,
                 'booking': booking,
@@ -75,13 +84,13 @@ def api(request, name, id=None):
                     booking_room_id=data['room_id'],
                     datetime_start__gte=data['datetime_start'],
                     datetime_end__lte=data['datetime_end']).delete()
-            
+
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
                                    booking_room_id=data['room_id'], booking_user_id=request.user.id)
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:
-                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=datetime.now()).order_by('datetime_start').values()), safe=False)
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=timezone.now()).order_by('datetime_start').values()), safe=False)
         if request.method == 'DELETE':
             if id is not None:
                 Booking.objects.filter(
