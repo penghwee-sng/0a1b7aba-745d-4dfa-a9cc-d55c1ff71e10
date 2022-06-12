@@ -90,7 +90,8 @@ def api(request, name, id=None):
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:
-                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=timezone.now()).order_by('datetime_start').values()), safe=False)
+                print(request.user.id)
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=timezone.now()-timedelta(days=2)).order_by('datetime_start').values()), safe=False)
         if request.method == 'DELETE':
             if id is not None:
                 Booking.objects.filter(
