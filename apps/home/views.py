@@ -52,7 +52,7 @@ def api(request, name, id=None):
     if name == 'all':
         return JsonResponse({
             'rooms': list(Room.objects.values()),
-            'bookings': list(Booking.objects.select_related('booking_user_id').filter(datetime_start__gte=timezone.now()).values()),
+            'bookings': list(Booking.objects.filter(datetime_start__gte=timezone.now()-timedelta(days=2)).values()),
             'users': list(get_user_model().objects.all().values('id', 'username'))
         }, safe=False)
     if name == 'rooms':
@@ -86,7 +86,7 @@ def api(request, name, id=None):
                     datetime_end__lte=data['datetime_end']).delete()
 
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
-                                   booking_room_id=data['room_id'], booking_user_id=request.user.id)
+                                   booking_room_id=data['room_id'], booking_user_id=request.user.id, scenario=data['scenario'], pax=data['pax'])
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:

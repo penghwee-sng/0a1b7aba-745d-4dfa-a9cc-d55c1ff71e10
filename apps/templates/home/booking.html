@@ -65,6 +65,7 @@
   }
 
   #room .btn-sm,
+  #pax .btn-sm,
   .time .btn-sm,
   .time-end .btn-sm {
     margin-right: 10px;
@@ -86,20 +87,34 @@
     text-align: center;
     padding: 20px;
   }
-  .bit-blocked {
+  .bit-blocked, .my-booking {
     position: relative;
   }
   .bit-blocked::after {
     content: "";
     display: block;
-    width: 5px;
-    height: 5px;
-    background-color: #F45B69;
+    height: 3px;
+    background-color: #ddd;
     position: absolute;
-    border-radius: 50%;
+    border-radius: 2px;
     top: 2px;
     right: 5px;
-}
+    left: 5px;
+  }
+  .my-booking::after {
+    content: "";
+    display: block;
+    height: 3px;
+    background-color: #00b348;
+    position: absolute;
+    border-radius: 2px;
+    top: 2px;
+    right: 5px;
+    left: 5px;
+  }
+  .table-sm td, .table-sm th {
+    padding: 0.5rem;
+  }
 </style>
 
 {% endblock stylesheets %} {% block content %}
@@ -112,7 +127,35 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-6 offset-lg-3">
-          <h4 class="mb-2 mt-4">Book a Room</h4>
+          {% if user.is_superuser %}
+          <h4 class="mb-2 mt-4">Blocked Dates</h4>
+          {% else %}
+          <h4 class="mb-2 mt-4">My Bookings</h4>
+          {% endif %}
+          <div class="card">
+            <!-- /.card-header -->
+            <div class="card-body p-0">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    {% if not user.is_superuser %}
+                    <th>Room</th>
+                    {% endif %}
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="my-bookings"></tbody>
+              </table>
+              <div class="text-center no-bookings-message">No bookings</div>
+            </div>
+            <!-- /.card-body -->
+          </div>
+          {% if user.is_superuser %}
+          <h4 class="mb-2 mt-4">Block Dates</h4>
+          {% else %}
+          <h4 class="mb-2 mt-4">Book Training</h4>
+          {% endif %}
           <div class="card">
             <div class="card-body">
               {% csrf_token %} {% if user.is_superuser %}
@@ -129,6 +172,14 @@
                   class="btn-group-toggle"
                   data-toggle="buttons"
                   id="room"
+                ></div>
+              </div>
+              <div class="form-group">
+                <label>Number of Trainee</label>
+                <div
+                  class="btn-group-toggle"
+                  data-toggle="buttons"
+                  id="pax"
                 ></div>
               </div>
               {% endif %} {% if user.is_superuser %}
@@ -148,24 +199,6 @@
               >
                 Book Now
               </button>
-            </div>
-            <!-- /.card-body -->
-          </div>
-          <h4 class="mb-2 mt-4">My Bookings</h4>
-          <div class="card">
-            <!-- /.card-header -->
-            <div class="card-body p-0">
-              <table class="table table-sm">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Room</th>
-                    <th class="text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="my-bookings"></tbody>
-              </table>
-              <div class="text-center no-bookings-message">No bookings</div>
             </div>
             <!-- /.card-body -->
           </div>
@@ -222,6 +255,14 @@
 <script src="/static/assets/plugins/moment/moment.min.js"></script>
 
 <script>
+  // Adds capitalize function to String
+  Object.defineProperty(String.prototype, 'capitalize', {
+    value: function() {
+      return this.charAt(0).toUpperCase() + this.slice(1);
+    },
+    enumerable: false
+  });
+
   // function to convert time string to format HH:MM
   function convertTime(time) {
       var ampm = "am";
@@ -256,11 +297,61 @@
   }
 
   var superadmin_id = 3;
-  var bitadmin_id = 1
+  var bitadmin_id = 1;
+  var my_room_id = 0;
+  var my_room_name = "";
   var start_datestr = "";
   var end_datestr = "";
   var duration = 0;
+
   var bookings = [];
+  function label_booked_room(current_date) {
+    current_date += "T00:00:00+08:00";
+    current_date_moment = moment(moment(current_date).valueOf());
+
+    // Resets all training buttons
+    $("input[name='room']")
+      .attr("disabled", false)
+      .parent()
+      .removeClass("disabled")
+      .find("span")
+      .text("");
+
+    bookings.forEach((booking) => {
+      var start_date_moment = moment(moment(booking.datetime_start).valueOf());
+      var end_date_moment = moment(moment(booking.datetime_end).valueOf());
+
+      if (current_date_moment.isBetween(start_date_moment, end_date_moment) || current_date_moment.isSame(start_date_moment) || current_date_moment.isSame(end_date_moment)) {
+        $("input[name='room']").each(function (i) {
+          if ($(this).val() == booking.booking_room_id) {
+            $(this).attr("disabled", true);
+            $(this).parent().addClass("disabled");
+
+            var addon_text = "";
+            if (booking.booking_user_id == bitadmin_id) {
+              addon_text = '| Unavailable'
+            } else if ($(this).data("scenario") == booking.scenario) {
+              addon_text = `| Booked by ${users[booking.booking_user_id].capitalize()} for ${booking.pax} pax`;
+            }
+
+            $(this)
+              .parent()
+              .find("span")
+              .text(addon_text);
+            
+            if (addon_text != '| Unavailable') {
+              $("input[name='room']")
+              .attr("disabled", true)
+              .parent()
+              .addClass("disabled");
+              return;
+            }
+          }
+        });
+      }
+    });
+  }
+
   var current_bookings = [];
   var users = [];
   var rooms = {};
@@ -269,32 +360,21 @@
   var end = new Date(now.getTime() + 28 * 24 * 60 * 60 * 1000);
 
   var disabled_bit = [];
+  function show_bit_blocked_indicator() {
+    disabled_bit.forEach(function(date) {
+      $(`[data-day="${date.format('MM/DD/YYYY')}"]`).addClass('bit-blocked');
+    });
+  }
+
   var disabled_all = [];
+  var my_bookings_date = [];
+  function show_my_booking_indicator() {
+    my_bookings_date.forEach(function(date) {
+      $(`[data-day="${date.format('MM/DD/YYYY')}"]`).addClass('my-booking');
+    });
+  }
 
-
-  // Initialize Calendars
-  $('#calendar, #calendar-end').datetimepicker({
-      format: 'L',
-      inline: true,
-      minDate: now,
-      daysOfWeekDisabled: [0, 6]
-  })
-
-
-  // On Start Calendar Change
-  $('#calendar').on('change.datetimepicker', function (e) {
-      $('#calendar-end')?.datetimepicker('minDate', e.date);
-      start_datestr = e.date.format('YYYY-MM-DD');
-  });
-
-
-  // On End Calendar Change
-  $('#calendar-end').on('change.datetimepicker', function (e) {
-      end_datestr = e.date.format('YYYY-MM-DD');
-  });
-
-
-  // Get Rooms and block dates on Calendar
+  // Get Users, Rooms and block dates on Calendar
   $.ajax({
       url: "/api/all/",
       dataType: 'json',
@@ -311,17 +391,31 @@
           // Populate rooms
           data.rooms.forEach(room => {
             rooms[room.room_id] = room.room_name;
+            {% if request.user.get_username == "bitadmin" %}
+            if (room.room_name == "BIT") {
+              my_room_id = room.room_id;
+              my_room_name = room.room_name;
+            }
+            {% endif %}
+            {% if request.user.get_username == "superadmin" %}
+            if (room.room_name == "UTS") {
+              my_room_id = room.room_id;
+              my_room_name = room.room_name;
+            }
+            {% endif %}
+
             if (room.scenarios == 0) {
-              $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=0 disabled>${room.room_name}</label>`)
+              $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=0 data-label="${room.room_name}" disabled>${room.room_name} <span></span></label>`)
             }
             else if (room.scenarios > 0) {
               for (var i = 1; i <= room.scenarios; i++) {
-                $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=${i} disabled>${room.room_name} Scenario ${i}</label>`)
+                $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=${i} data-label="${room.room_name} S${i}" disabled>${room.room_name} S${i} <span></span></label>`)
               }
             }
           });
 
           // Block dates
+          bookings = data.bookings;
           data.bookings.forEach(booking => {
               if (booking.booking_user_id == superadmin_id || booking.booking_user_id == bitadmin_id)
               {
@@ -337,121 +431,81 @@
               }
           });
           $('#calendar').data('datetimepicker').disabledDates(disabled_all);
-          $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_all);
+          $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_all);          
 
-          // Show indicator for dates where BIT is blocked
-          {% if user.is_superuser %}
-          {% else %}
-          disabled_bit.forEach(function(date) {
-            $(`[data-day="${date.format('MM-DD-YYYY')}"]`).addClass('bit-blocked');
-            console.log(date.format('MM-DD-YYYY'));
-          });
-          {% endif %}
-
-          // Auto select first date
-          $('td.day.active').click();
-      }
-  });
-
-
-  // Get Scenario
-  $('#room').on('change', function (e) {
-      $.ajax({
-          url: "/api/rooms/",
-          dataType: 'json',
-          success: function (data) {
-              // Populate Users
-              data.users.forEach(user => {
-                  users[user.id] = user.username;
-                  if (user.username == "admin")
-                      bitadmin_id = user.id;
-                  if (user.username == "superadmin")
-                      superadmin_id = user.id;
-              });
-
-              data.bookings.forEach(booking => {
-                  if (booking.booking_user_id == superadmin_id || booking.booking_user_id == bitadmin_id)
-                  {
-                      let start_date = moment(booking.datetime_start);
-                      let end_date = moment(booking.datetime_end);
-
-                      for (var m = moment(start_date); m.isBefore(end_date); m.add(1, 'days')) {
-                          if (booking.booking_user_id == superadmin_id)
-                              disabled_all.push(moment(m));
-                          else
-                              disabled_bit.push(moment(m));
-                      }
-                  }
-              });
-
-              $('#calendar').data('datetimepicker').disabledDates(disabled_all);
-              $('#calendar-end').data('datetimepicker')?.disabledDates(disabled_all);
-
-              sessions = Math.floor(10 / data.room.session_duration);
-              time_slots = [];
-              for (i = 0; i < sessions; i++)
-              {
-                  time_slots.push(i * data.room.session_duration + 8);
-              }
-              // set select to value of array
-              $('.time').empty();
-              $('.time-end').empty();
-              for (i = 0; i < time_slots.length; i++)
-              {
-                  date = new Date(0);
-                  date.setHours(time_slots[i]);
-                  date.setMinutes(0);
-                  var disabled = false;
-                  current_bookings.forEach(booking => {
-                      if (booking.moment(booking.datetime_start).hour() == time_slots[i])
-                      {
-                          disabled = true;
-
-                      }
-                  });
-                  $('.time').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
-                  $('.time-end').append('<label class="btn btn-sm btn-outline-primary"><input type="radio" name="time-end" value="' + time_slots[i] + '">' + convertLocaleString(date.toLocaleTimeString()) + '<span></span></label>')
-              }
-              $('.no-room-message').hide();
-              $("input[name='time']").attr('disabled', true);
-              $("input[name='time']").parent().addClass('disabled');
-              $("input[name='time']").parent().hide();
-              $('.no-date-message').show();
-          }
-      });
-  });
-
-  $.ajax({
-      url: "/api/bookings/",
-      dataType: 'json',
-      success: function (data) {
-          data.forEach(d => {
-              {% if user.is_superuser %}
-              $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
-              {% else %}
-              $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY, h:mm a')} - ${moment(d.datetime_end).format('h:mm a')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
-              {% endif %}
-              $('.no-bookings-message').hide();
+            // Populate My Bookings
+          $.ajax({
+            url: "/api/bookings/",
+            dataType: 'json',
+            success: function (data) {
+                data.forEach(d => {
+                    {% if user.is_superuser %}
+                    $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
+                    {% else %}
+                    
+                    my_bookings_date.push(moment(d.datetime_start));
+                    $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD/MM/YY')} 08:00 am</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}"></i></td></tr>`)
+                    {% endif %}
+                    $('.no-bookings-message').hide();
+                });
+                // Show indicator for dates where BIT is blocked
+                show_bit_blocked_indicator();
+                show_my_booking_indicator();
+            }
           });
       }
   });
 
-  $(document).on('change', '[name=time]', function (e) {
-      if(start_datestr != end_datestr) return;
-      $(`input[name='time-end']`).attr('disabled', false);
-      $(`input[name='time-end']`).parent().removeClass('disabled');
-      var selected_time = this.value;
-      $(`input[name='time-end'][value='${this.value}'`).parent().click();
-      $(`input[name='time-end']`).each(function (i) {
-          if (parseInt(this.value) < selected_time)
-          {
-              $(this).attr('disabled', true);
-              $(this).parent().addClass('disabled');
-          }
-      });
-      $('#submit').attr('disabled', false)
+
+  // Initialize Calendars
+  $('#calendar, #calendar-end').datetimepicker({
+      format: 'L',
+      inline: true,
+      minDate: now,
+      daysOfWeekDisabled: [0, 6],
+      useCurrent: false
+  })
+
+
+  // On Start Calendar Change
+  $('#calendar').on('change.datetimepicker', function (e) {
+      $('#calendar-end')?.datetimepicker('minDate', e.date);
+      start_datestr = e.date.format('YYYY-MM-DD');
+      $('input[name="room"]')
+      .prop('checked', false)
+      .parent()
+      .removeClass("active");
+      label_booked_room(e.date.format('YYYY-MM-DD'));
+      show_bit_blocked_indicator();
+      show_my_booking_indicator();
+  });
+  $('#calendar').on('update.datetimepicker', function (e) {
+    start_datestr = "";
+    $('input[name="room"]')
+    .prop('checked', false)
+    .parent()
+    .removeClass("active");
+    show_bit_blocked_indicator();
+    show_my_booking_indicator();
+});
+
+// Update indicators on calendar update
+const on_calendar_update = function(mutationList, observer) {
+    show_bit_blocked_indicator();
+    show_my_booking_indicator();
+};
+const observer = new MutationObserver(on_calendar_update);
+const config = { attributes: true, childList: true, subtree: true };
+const targetNode = document.getElementById('calendar');
+observer.observe(targetNode, config);
+
+
+  // On End Calendar Change
+  $('#calendar-end').on('change.datetimepicker', function (e) {
+      end_datestr = e.date.format('YYYY-MM-DD');
   });
 
+  // Delete Booking
   $(document).on('click', '.delete-booking', function (e) {
       if (!confirm('Are you sure you want to delete this booking?'))
       {
@@ -473,9 +527,12 @@
               {
                   $('.no-bookings-message').show();
               }
+              window.location.reload();
           }
       });
   });
+
+  // Submit Booking
   $('#submit').on('click', function (e) {
       e.preventDefault();
       var token = $('input[name="csrfmiddlewaretoken"]').attr('value')
@@ -486,13 +543,14 @@
       });
       {% if user.is_superuser %}
 
-      var room = $('input[name=room]:checked').val();
-      var room_name = $('input[name=room]:checked').parent().text();
-      var time = $('input[name=time]:checked').val();
+      var room = my_room_id;
+      var room_name = my_room_name;
       var data = {
           room_id: room,
           datetime_start: `${start_datestr} 00:00`,
           datetime_end: `${end_datestr} 23:59`,
+          scenario: 0,
+          pax: 1,
       };
 
       if (start_datestr != '' && end_datestr != '')
@@ -507,7 +565,6 @@
               type: "POST",
               data: data,
               success: function (data) {
-                  console.log(data);
                   toastr.success('Booking has been made successfully.')
                   $('#submit').attr('disabled', true).text('Booking Successful');
                   setTimeout(() => {
@@ -521,20 +578,24 @@
           });
       } else
       {
-          toastr.error('Please select a room , start date and end date.')
+          toastr.error('Please select a Start Date and End Date.')
       }
       {% else %}
       var room = $('input[name=room]:checked').val();
       var room_name = $('input[name=room]:checked').parent().text();
+      var pax = $('input[name=pax]:checked').val();
+      var scenario = $('input[name=room]:checked').data('scenario');
       var time = $('input[name=time]:checked').val();
       var endtime = parseInt(time) + parseInt(duration);
       var data = {
           room_id: room,
           datetime_start: `${start_datestr} 00:00`,
           datetime_end: `${start_datestr} 23:59`,
+          scenario: scenario,
+          pax: pax,
       };
 
-      if (room)
+      if (start_datestr != '' && room && pax)
       {
           if(!confirm(`Are you sure you want to book ${room_name} from ${data.datetime_start} to ${data.datetime_end}?`))
           {
@@ -546,7 +607,6 @@
               type: "POST",
               data: data,
               success: function (data) {
-                  console.log(data);
                   toastr.success('Booking has been made successfully.')
                   $('#submit').attr('disabled', true).text('Booking Successful');
                   setTimeout(() => {
@@ -560,10 +620,14 @@
           });
       } else
       {
-          toastr.error('Please select a date, room, and time.')
+          toastr.error('Please select a date, training and number of trainee.')
       }
       {% endif %}
   });
+
+  for (var i = 1; i <= 18; i++) {
+    $('#pax').append(`<label class="btn btn-sm btn-outline-primary"><input type="radio" name="pax" value="${i}">${i}</label>`)
+  }
 </script>
 
 {% endblock javascripts %}

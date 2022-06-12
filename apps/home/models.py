@@ -18,6 +18,7 @@ class Booking(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     booking_room = models.ForeignKey('Room', on_delete=models.CASCADE)
     scenario = models.IntegerField(default=0)
+    pax = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
