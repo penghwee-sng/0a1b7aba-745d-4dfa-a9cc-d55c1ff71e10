@@ -12,7 +12,7 @@ import pytz
 
 class Booking(models.Model):
     booking_id = models.AutoField(primary_key=True)
-    datetime_start = models.DateTimeField(unique=True)
+    datetime_start = models.DateTimeField()
     datetime_end = models.DateTimeField()
     booking_user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -44,13 +44,13 @@ class Booking(models.Model):
 
         # check for items that have an overlapping end date
         booking_overlapping_end = Booking.objects.filter(
-            datetime_end__gt=start, datetime_end__lt=end).exists()
+            datetime_end__gt=start, datetime_end__lt=end,
+            booking_room_id=self.booking_room).exists()
 
         # check for items that envelope this item
         booking_enveloping = Booking.objects.filter(
-            datetime_start__lte=start, datetime_end__gte=end).exists()
-        print(booking_overlapping_start,
-              booking_overlapping_end, booking_enveloping)
+            datetime_start__lte=start, datetime_end__gte=end,
+            booking_room_id=self.booking_room).exists()
 
         booking_items_present = booking_overlapping_start or booking_overlapping_end or booking_enveloping
 
