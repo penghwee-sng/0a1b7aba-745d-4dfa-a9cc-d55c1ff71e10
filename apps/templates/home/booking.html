@@ -590,7 +590,7 @@
         }
         {% else %}
         var room = $('input[name=room]:checked').val();
-        var room_name = $('input[name=room]:checked').parent().text();
+        var room_name = $('input[name=room]:checked').data('label');
         var pax = $('input[name=pax]:checked').val();
         var scenario = $('input[name=room]:checked').data('scenario');
         var time = $('input[name=time]:checked').val();
@@ -605,7 +605,7 @@
 
         if (start_datestr != '' && room && pax)
         {
-            if(!confirm(`Are you sure you want to book ${room_name} on ${start_datestr}?`))
+            if(!confirm(`Are you sure you want to book ${room_name} on ${moment(start_datestr).format("DD MMM YY")}?`))
             {
                 return;
             }
