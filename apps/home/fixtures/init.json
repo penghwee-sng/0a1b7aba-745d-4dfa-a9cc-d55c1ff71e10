@@ -1,0 +1,158 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$sJsbytITYsqLjgWwb2iomI$Qd5jdXG7tbzq7dR99Uzpog0VfqZDpM81qT6xktydO20=",
+      "last_login": "2022-06-18T08:39:47.749Z",
+      "is_superuser": true,
+      "username": "superadmin",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:38:32.077Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$N6ChV3xUMtzuib9SVVGqXK$1WYrcOtgjkXfVsCxGZ2mmvHZ2Ta1fq358BCALdmDlhE=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "bitadmin",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:38:43.686Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$KGuRmoP8ykgkOWuK89hX2B$6HUA9Ta2nul+ulrt58n8YsF4eY/HwG9owPm95nW3RZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "eagle",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:40:03.362Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$PX1RGO06rpHgABXtNE1b8M$KgDtL58pNgDbA3jDmN+6LcKrSEBTqxKn/Sk1kTTrx74=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "jaguar",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:40:14.266Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 5,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$RBTJjxGr3ZrPgwAvicBJBd$Yv1fmnrfoFEy2+KsrPdj8xd++QaPW5b3ymxjyoq64As=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "canary",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:40:20.106Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 6,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$uKANYBQ67m4RVzZ907onra$VBqo3m0ib+BwPJzJDy3r+14GANqI611GFau9EejLsJs=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "lionfish",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:40:25.514Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 7,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$kVlt9gUsXUUeg3UVkzUKi6$Kn96Rcp6cOEtYzP8z1vWr7ELY3LmyDw5GpizQfENUmA=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "fox",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-06-18T08:40:29.746Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "home.room",
+    "pk": 1,
+    "fields": {
+      "room_name": "UTS",
+      "session_duration": 8,
+      "owner": 1,
+      "scenarios": 0,
+      "prep_days": 0,
+      "room_status": "Available",
+      "room_comment": null,
+      "created_at": "2022-06-18T08:41:01.196Z",
+      "updated_at": "2022-06-18T08:41:01.196Z"
+    }
+  },
+  {
+    "model": "home.room",
+    "pk": 2,
+    "fields": {
+      "room_name": "BIT",
+      "session_duration": 8,
+      "owner": 2,
+      "scenarios": 7,
+      "prep_days": 5,
+      "room_status": "Available",
+      "room_comment": null,
+      "created_at": "2022-06-18T08:41:13.932Z",
+      "updated_at": "2022-06-18T08:41:13.932Z"
+    }
+  }
+]
