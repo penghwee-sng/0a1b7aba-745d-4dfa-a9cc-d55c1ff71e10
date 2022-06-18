@@ -78,12 +78,19 @@ def api(request, name, id=None):
     if name == 'bookings':
         if request.method == 'POST':
             data = request.POST
+
             # delete overlapping bookings if is admin
             if request.user.is_superuser:
-                Booking.objects.filter(
-                    booking_room_id=data['room_id'],
-                    datetime_start__gte=data['datetime_start'],
-                    datetime_end__lte=data['datetime_end']).delete()
+                if request.user.username == "bitadmin":
+                    bookings = Booking.objects.filter(                      
+                        booking_room_id=data['room_id'],
+                        datetime_start__lte=data['datetime_end'],
+                        datetime_end__gte=data['datetime_start'])
+                else:
+                    bookings = Booking.objects.filter(    
+                        datetime_start__lte=data['datetime_end'],
+                        datetime_end__gte=data['datetime_start'])
+                bookings.delete()
 
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
                                    booking_room_id=data['room_id'], booking_user_id=request.user.id, scenario=data['scenario'], pax=data['pax'])

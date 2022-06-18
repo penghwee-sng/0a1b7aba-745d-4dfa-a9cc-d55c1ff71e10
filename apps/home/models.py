@@ -54,6 +54,15 @@ class Booking(models.Model):
 
         booking_items_present = booking_overlapping_start or booking_overlapping_end or booking_enveloping
 
+        overlapping_booking_items = Booking.objects.filter(
+            datetime_start__lte=end,
+            datetime_end__gte=start,
+            booking_room_id=self.booking_room)
+
+        print(overlapping_booking_items)
+
+        booking_items_present = overlapping_booking_items.exists()
+
         if booking_items_present:
             raise ValueError('This booking overlaps with another booking')
         else:
