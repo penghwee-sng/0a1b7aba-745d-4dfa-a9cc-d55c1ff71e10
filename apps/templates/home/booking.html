@@ -304,6 +304,20 @@
         return date_str;
     }
 
+    function calculateWorkingDays(startDate, endDate) {
+        var start = moment(startDate);
+        var end = moment(endDate);
+        var days = end.diff(start, 'days');
+        var working_days = 0;
+        for (var i = 0; i <= days; i++) {
+            var day = start.add(1, 'days');
+            if (day.isoWeekday() != 6 && day.isoWeekday() != 7) {
+                working_days++;
+            }
+        }
+        return working_days;
+    }
+
     var superadmin_id = 3;
     var bitadmin_id = 1;
     var my_room_id = 0;
@@ -317,6 +331,8 @@
       current_date += "T00:00:00+08:00";
       current_date_moment = moment(moment(current_date).valueOf());
 
+      console.log(calculateWorkingDays(moment(), current_date_moment))
+
       // Resets all training buttons
       $("input[name='room']")
         .attr("disabled", false)
@@ -324,6 +340,17 @@
         .removeClass("disabled")
         .find("span")
         .text("");
+
+      // disable BIT if less than 5 working days
+      $("input[name='room']").each(function (i) {
+        if ($(this).data('name') == 'BIT' && calculateWorkingDays(moment(), current_date_moment) < 6) {
+          $(this).attr("disabled", true)
+            .parent()
+            .addClass("disabled")
+            .find("span")
+            .text("| Prep time needed");
+        }
+      });
 
       bookings.forEach((booking) => {
         var start_date_moment = moment(moment(booking.datetime_start).valueOf());
@@ -337,6 +364,7 @@
 
               var addon_text = "";
               if (booking.booking_user_id == bitadmin_id) {
+                console.log($(this).data("label"));
                 addon_text = '| Unavailable'
               } else if ($(this).data("scenario") == booking.scenario) {
                 addon_text = `| Booked by ${users[booking.booking_user_id].capitalize()} for ${booking.pax} pax`;
@@ -347,6 +375,7 @@
                 .find("span")
                 .text(addon_text);
 
+              // if UTS is booked, since no other training can happen, disable all buttons
               if (addon_text != '| Unavailable') {
                 $("input[name='room']")
                 .attr("disabled", true)
@@ -413,11 +442,11 @@
               {% endif %}
 
               if (room.scenarios == 0) {
-                $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=0 data-label="${room.room_name}" disabled>${room.room_name} <span></span></label>`)
+                $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=0 data-name="${room.room_name}" data-label="${room.room_name}" disabled>${room.room_name} <span></span></label>`)
               }
               else if (room.scenarios > 0) {
                 for (var i = 1; i <= room.scenarios; i++) {
-                  $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=${i} data-label="${room.room_name} S${i}" disabled>${room.room_name} S${i} <span></span></label>`)
+                  $('#room').append(`<label class="btn btn-sm btn-outline-primary disabled"><input type="radio" name="room" value="${room.room_id}" data-scenario=${i} data-name="${room.room_name}" data-label="${room.room_name} S${i}" disabled>${room.room_name} S${i} <span></span></label>`)
                 }
               }
             });

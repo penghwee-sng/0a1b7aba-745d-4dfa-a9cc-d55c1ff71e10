@@ -3,11 +3,21 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+from datetime import timedelta
 from django.db import models
 from django.conf import settings
 import pytz
 
 # Create your models here.
+
+# calculate number of working days between two dates
+def working_days(start_date, end_date):
+    working_days = 0
+    for i in range(int((end_date - start_date).days)):
+        if start_date.weekday() < 5:
+            working_days += 1
+        start_date += timedelta(days=1)
+    return working_days
 
 
 class Booking(models.Model):
@@ -63,6 +73,8 @@ class Booking(models.Model):
 
         booking_items_present = overlapping_booking_items.exists()
 
+        # todo: check minimum number of days required to book
+
         if booking_items_present:
             raise ValueError('This booking overlaps with another booking')
         else:
@@ -76,6 +88,7 @@ class Room(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE)
     scenarios = models.IntegerField(default=0)
+    prep_days = models.IntegerField(default=0)
     room_status = models.CharField(max_length=20, default='Available')
     room_comment = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
