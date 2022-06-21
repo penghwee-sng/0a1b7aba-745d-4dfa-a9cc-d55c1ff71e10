@@ -44,32 +44,14 @@ class Booking(models.Model):
         if start >= end:
             raise ValueError('Start time must be before end time')
 
-        print(start, end)
-
-        # check for items that have an overlapping start date
-        booking_overlapping_start = Booking.objects.filter(
-            datetime_start__gt=start,
-            datetime_start__lt=end,
-            booking_room_id=self.booking_room).exists()
-
-        # check for items that have an overlapping end date
-        booking_overlapping_end = Booking.objects.filter(
-            datetime_end__gt=start, datetime_end__lt=end,
-            booking_room_id=self.booking_room).exists()
-
-        # check for items that envelope this item
-        booking_enveloping = Booking.objects.filter(
-            datetime_start__lte=start, datetime_end__gte=end,
-            booking_room_id=self.booking_room).exists()
-
-        booking_items_present = booking_overlapping_start or booking_overlapping_end or booking_enveloping
+        # check if user is admin, if so, skip check
+        if self.booking_user in (1, 2):
+            super(Booking, self).save(*args, **kwargs)
 
         overlapping_booking_items = Booking.objects.filter(
             datetime_start__lte=end,
             datetime_end__gte=start,
             booking_room_id=self.booking_room)
-
-        print(overlapping_booking_items)
 
         booking_items_present = overlapping_booking_items.exists()
 

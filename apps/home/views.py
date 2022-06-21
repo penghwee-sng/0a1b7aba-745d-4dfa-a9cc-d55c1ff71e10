@@ -11,6 +11,7 @@ from django.template import loader
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.db.models import Q
 from .models import Room, Booking
 
 
@@ -90,6 +91,7 @@ def api(request, name, id=None):
                     bookings = Booking.objects.filter(    
                         datetime_start__lte=data['datetime_end'],
                         datetime_end__gte=data['datetime_start'])
+                    bookings = bookings.filter(~Q(booking_user_id=2))
                 bookings.delete()
 
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
