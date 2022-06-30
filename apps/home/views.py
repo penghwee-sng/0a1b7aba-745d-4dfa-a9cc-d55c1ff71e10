@@ -6,6 +6,8 @@ Copyright (c) 2019 - present AppSeed.us
 from datetime import timedelta
 from django import template
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.urls import reverse
@@ -13,6 +15,20 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Q
 from .models import Room, Booking
+import os
+
+
+def send_mail_to_id(id, subject, message):
+    user = User.objects.get(id=id)
+    user_email = user.email
+    if user_email != "":
+        send_mail(
+            subject,
+            message,
+            None,
+            [user_email],
+            fail_silently=False,
+        )
 
 
 @login_required(login_url="/login/")
@@ -80,7 +96,7 @@ def api(request, name, id=None):
     if name == 'bookings':
         if request.method == 'POST':
             data = request.POST
-
+            room_name = 'UTS' if data['room_id']==1 else 'BIT'
             # delete overlapping bookings if is admin
             if request.user.is_superuser:
                 if request.user.username == "bitadmin":
@@ -93,14 +109,35 @@ def api(request, name, id=None):
                         datetime_start__lte=data['datetime_end'],
                         datetime_end__gte=data['datetime_start'])
                     bookings = bookings.filter(~Q(booking_user_id=2))
-                bookings.delete()
+                    
+                # if booking gets cancelled, email user
+                # email each user once only for each block
+                user_list = set()
+                for booking in list(bookings):
+                    user_id = getattr(booking, 'booking_user_id')
+                    user_list.add(user_id)
 
+                for id in user_list:
+                    send_mail_to_id(
+                        id,
+                        "Bookings has been cancelled",
+                        f"Hello,\n\nThe owner of {room_name} has blocked the room from {data['datetime_start']} to {data['datetime_end']}. All bookings within this period has been cancelled. Sorry for the inconvenience.\n\nCheers,\nTraining Booking System"
+                    ) 
+
+                bookings.delete()
+                
+            elif data['room_id'] == '2':
+                # if BIT is booked, notify bitadmin
+                send_mail_to_id(
+                    2,
+                    f"BIT booking has been made on {data['datetime_start'].split()[0]}",
+                    f"Hello,\n\n{request.user.username.upper()} has booked BIT scenario {data['scenario']} on {data['datetime_start'].split()[0]}.\n\nCheers,\nTraining Booking System"
+                )
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
                                    booking_room_id=data['room_id'], booking_user_id=request.user.id, scenario=data['scenario'], pax=data['pax'])
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:
-                print(request.user.id)
                 return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=timezone.now()-timedelta(days=2)).order_by('datetime_start').values()), safe=False)
         if request.method == 'DELETE':
             if id is not None:

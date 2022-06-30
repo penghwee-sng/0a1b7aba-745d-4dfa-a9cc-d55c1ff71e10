@@ -72,6 +72,14 @@ TEMPLATES = [
     },
 ]
 
+## Email settings
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ.get('GMAIL_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PW')
+DEFAULT_FROM_EMAIL = 'Training Booking System <nineteenlearner@gmail.com>'
+
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
