@@ -21,6 +21,7 @@ def working_days(start_date, end_date):
 
 
 class Booking(models.Model):
+    list_display('datetime_start', 'booking_user', 'booking_room', 'scenario')
     booking_id = models.AutoField(primary_key=True)
     datetime_start = models.DateTimeField()
     datetime_end = models.DateTimeField()
