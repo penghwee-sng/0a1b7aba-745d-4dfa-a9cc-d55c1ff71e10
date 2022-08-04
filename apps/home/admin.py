@@ -6,8 +6,9 @@ Copyright (c) 2019 - present AppSeed.us
 from django.contrib import admin
 from .models import Room, Booking
 
+@admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    pass
+    list_display('datetime_start', 'booking_user', 'booking_room', 'scenario')
 
 # Register your models here.
 admin.site.register(Booking, BookingAdmin)
