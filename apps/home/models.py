@@ -6,6 +6,7 @@ Copyright (c) 2019 - present AppSeed.us
 from datetime import timedelta
 from django.db import models
 from django.conf import settings
+from django.contrib import admin
 import pytz
 
 # Create your models here.
@@ -21,7 +22,6 @@ def working_days(start_date, end_date):
 
 
 class Booking(models.Model):
-    list_display('datetime_start', 'booking_user', 'booking_room', 'scenario')
     booking_id = models.AutoField(primary_key=True)
     datetime_start = models.DateTimeField()
     datetime_end = models.DateTimeField()
