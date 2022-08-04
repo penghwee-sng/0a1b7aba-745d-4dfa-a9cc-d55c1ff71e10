@@ -8,7 +8,7 @@ from .models import Room, Booking
 
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display('datetime_start', 'booking_user', 'booking_room', 'scenario')
+    list_display = ('datetime_start', 'booking_user', 'booking_room', 'scenario')
 
 # Register your models here.
 admin.site.register(Booking, BookingAdmin)
