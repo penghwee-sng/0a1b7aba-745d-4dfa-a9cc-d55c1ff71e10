@@ -7,7 +7,7 @@ from django.contrib import admin
 from .models import Room, Booking
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ('datetime_start', 'booking_user', 'booking_room', 'scenario')
+    list_display = ('datetime_start', 'booking_user', 'booking_room', 'scenario', 'pax')
     list_filter = ('booking_user',)
 
 # Register your models here.
