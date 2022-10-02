@@ -2,7 +2,7 @@
 """
 Copyright (c) 2019 - present AppSeed.us
 """
-
+import os
 from datetime import timedelta
 from django import template
 from django.contrib.auth.decorators import login_required
@@ -14,8 +14,9 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
+from django.views.decorators.csrf import csrf_exempt
 from .models import Room, Booking
-import os
 
 
 def send_mail_to_id(id, subject, message):
@@ -66,6 +67,7 @@ def pages(request):
         return HttpResponse(html_template.render(context, request))
 
 
+@csrf_exempt
 def api(request, name, id=None):
     if name == 'all':
         return JsonResponse({
@@ -93,10 +95,26 @@ def api(request, name, id=None):
                 'users': users
             }, safe=False)
 
-    if name == 'bookings':
+    if name == 'bookings':        
+        if request.user.is_anonymous:
+            telegram_id = request.headers.get('TG-ID')
+            if telegram_id is not None:
+                user = get_user_model().objects.filter(first_name=telegram_id).values('id')
+                if user:
+                    current_user_id = user[0]['id']                      
+                else:
+                    raise PermissionDenied()
+            else:
+                raise PermissionDenied()
+        else:
+            current_user_id = request.user.id
+
         if request.method == 'POST':
             data = request.POST
             room_name = 'UTS' if data['room_id']==1 else 'BIT'
+
+            # print(current_user)
+
             # delete overlapping bookings if is admin
             if request.user.is_superuser:
                 if request.user.username == "bitadmin":
@@ -134,15 +152,15 @@ def api(request, name, id=None):
                     f"Hello,\n\n{request.user.username.upper()} has booked BIT scenario {data['scenario']} on {data['datetime_start'].split()[0]}.\n\nCheers,\nTraining Booking System"
                 )
             Booking.objects.create(datetime_start=data['datetime_start'], datetime_end=data['datetime_end'],
-                                   booking_room_id=data['room_id'], booking_user_id=request.user.id, scenario=data['scenario'], pax=data['pax'])
+                                   booking_room_id=data['room_id'], booking_user_id=current_user_id, scenario=data['scenario'], pax=data['pax'])
             return JsonResponse({'status': 'success'}, safe=False)
         if request.method == 'GET':
             if id is None:
-                return JsonResponse(list(Booking.objects.filter(booking_user_id=request.user.id, datetime_start__gte=timezone.now()-timedelta(days=2)).order_by('datetime_start').values()), safe=False)
+                return JsonResponse(list(Booking.objects.filter(booking_user_id=current_user_id, datetime_start__gte=timezone.now()-timedelta(days=2)).order_by('datetime_start').values()), safe=False)
         if request.method == 'DELETE':
             if id is not None:
                 Booking.objects.filter(
-                    booking_id=id, booking_user_id=request.user.id).delete()
+                    booking_id=id, booking_user_id=current_user_id).delete()
                 return JsonResponse({'status': 'success'}, safe=False)
     return JsonResponse({'name': name})
 
