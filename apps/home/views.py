@@ -200,10 +200,7 @@ def api(request, name, id=None):
             if id is None:
                 return JsonResponse(
                     list(
-                        Booking.objects.filter(
-                            booking_user_id=current_user_id,
-                            datetime_start__gte=timezone.now() - timedelta(days=2),
-                        )
+                        Booking.objects.filter(booking_user_id=current_user_id)
                         .order_by("datetime_start")
                         .values()
                     ),
