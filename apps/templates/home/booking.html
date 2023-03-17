@@ -461,7 +461,7 @@
         dataType: 'json',
         success: function (data) {
           data.forEach(d => {
-            if (moment().diff(moment(d.datetime_start)) < 0) continue;
+            if (moment().diff(moment(d.datetime_start)) < 0) return;
             {% if user.is_superuser %}
             $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD MMM YY')} &mdash; ${moment(d.datetime_end).format('DD MMM YY')}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}" data-display="${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}"></i></td></tr>`)
             {% else %}
