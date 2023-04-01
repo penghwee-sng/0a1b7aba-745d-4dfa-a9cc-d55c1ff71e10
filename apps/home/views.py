@@ -132,8 +132,10 @@ def api(request, name, id=None):
         if bookings:
             model_fields = [field.name for field in bookings.first()._meta.get_fields()]
             writer.writerow(model_fields)  # write header row
-            # for booking in bookings:
-            writer.writerow(bookings.values_list())  # write data rows
+
+        bookings_list = bookings.values_list()
+        for booking in bookings_list:
+            writer.writerow(booking)  # write data rows
 
         return response
 
