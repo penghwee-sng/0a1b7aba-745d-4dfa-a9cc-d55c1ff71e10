@@ -122,6 +122,15 @@ def api(request, name, id=None):
         )
 
     if name == "all-bookings":
+        name_dict = {
+            1: "superadmin",
+            2: "bitadmin",
+            3: "eagle",
+            4: "jaguar",
+            5: "canary",
+            6: "lionfish",
+            7: "fox",
+        }
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="bookings.csv"'
 
@@ -135,6 +144,7 @@ def api(request, name, id=None):
 
         bookings_list = bookings.values_list()
         for booking in bookings_list:
+            booking[3] = name_dict[booking[3]]
             writer.writerow(booking)  # write data rows
 
         return response
