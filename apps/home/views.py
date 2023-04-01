@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.csrf import csrf_exempt
 from .models import Room, Booking, TelegramToUser
+import csv
 
 
 def send_mail_to_id(id, subject, message):
@@ -119,6 +120,22 @@ def api(request, name, id=None):
             },
             safe=False,
         )
+
+    if name == "all-bookings":
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="bookings.csv"'
+
+        writer = csv.writer(response)
+        # writer.writerow(['id', 'field1', 'field2'])  # add header row
+
+        bookings = Booking.objects.all()
+        if bookings:
+            writer.writerow(bookings.first().keys())  # write header row
+
+        for booking in bookings:
+            writer.writerow(booking.values())  # write data rows
+
+        return response
 
     if name == "rooms":
         if id is None:
