@@ -144,6 +144,7 @@ def api(request, name, id=None):
 
         bookings_list = bookings.values_list()
         for booking in bookings_list:
+            booking = list(booking)
             booking[3] = name_dict[booking[3]]
             writer.writerow(booking)  # write data rows
 
