@@ -624,7 +624,7 @@
     var pax = $('input[name=pax]:checked').val();
     var scenario = $('input[name=room]:checked').data('scenario');
     var time = $('input[name=time]:checked').val();
-    var comment = $('input[name=comment]').val();
+    var comment = $('input[name=comment]:checked').val();
     var endtime = parseInt(time) + parseInt(duration);
     var data = {
       room_id: room,
