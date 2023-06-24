@@ -222,6 +222,7 @@ def api(request, name, id=None):
                 datetime_end=data["datetime_end"],
                 booking_room_id=data["room_id"],
                 booking_user_id=current_user_id,
+                booking_comment=data["comment"],
                 scenario=data["scenario"],
                 pax=data["pax"],
             )

@@ -126,6 +126,7 @@
                     <th>Date</th>
                     {% if not user.is_superuser %}
                     <th>Room</th>
+                    <th>Purpose</th>
                     {% endif %}
                     <th class="text-right">Action</th>
                   </tr>
@@ -164,6 +165,25 @@
               <div class="form-group">
                 <label>Number of Trainee</label>
                 <div class="btn-group-toggle" data-toggle="buttons" id="pax"></div>
+              </div>
+              <div class="form-group">
+                <label>Purpose</label>
+                <div class="btn-group-toggle" data-toggle="buttons" id="comment">
+                  <label class="btn btn-sm btn-outline-primary"><input type="radio" name="comment"
+                      value="Training">Training</label>
+                  <label class="btn btn-sm btn-outline-primary"><input type="radio" name="comment"
+                      value="Research">Research</label>
+                  <label class="btn btn-sm btn-outline-primary"><input type="radio" name="comment"
+                      value="Baselining">Baselining</label>
+                  <label class="btn btn-sm btn-outline-primary"><input type="radio" name="comment"
+                      value="XCV">XCV</label>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Purpose</label>
+                <div class="btn-group-toggle" id="comment1">
+                  <input type="text" name="comment" class="w-100" style="padding: 5px 10px;" />
+                </div>
               </div>
               {% endif %} {% if user.is_superuser %}
               <hr />
@@ -467,7 +487,7 @@
             {% else %}
 
                       my_bookings_date.push(moment(d.datetime_start));
-      $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD MMM YY')}</td><td>${rooms[d.booking_room_id]}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}" data-display="${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}"></i></td></tr>`)
+      $('#my-bookings').append(`<tr><td>${moment(d.datetime_start).format('DD MMM YY')}</td><td>${rooms[d.booking_room_id]}</td><td>${d.booking_comment}</td><td class="text-right"><i class="fas fa-trash delete-booking" data-id="${d.booking_id}" data-display="${moment(d.datetime_start).format('DD/MM/YY')} - ${moment(d.datetime_end).format('DD/MM/YY')}"></i></td></tr>`)
       {% endif %}
       $('.no-bookings-message').hide();
     });
@@ -609,6 +629,7 @@
     var pax = $('input[name=pax]:checked').val();
     var scenario = $('input[name=room]:checked').data('scenario');
     var time = $('input[name=time]:checked').val();
+    var comment = $('input[name=comment]').val();
     var endtime = parseInt(time) + parseInt(duration);
     var data = {
       room_id: room,
@@ -616,11 +637,12 @@
       datetime_end: `${start_datestr} 23:59`,
       scenario: scenario,
       pax: pax,
+      comment: comment,
     };
 
-    if (start_datestr != '' && room && pax)
+    if (start_datestr != '' && room && pax && comment != '')
     {
-      if (!confirm(`Are you sure you want to book ${room_name} on ${moment(start_datestr).format("DD MMM YY")}?`))
+      if (!confirm(`Are you sure you want to book ${room_name} on ${moment(start_datestr).format("DD MMM YY")} for ${comment}?`))
       {
         return;
       }
@@ -643,12 +665,12 @@
       });
     } else
     {
-      toastr.error('Please select a date, training and number of trainee.')
+      toastr.error('Please select a date, training ,number of trainee and state the purpose of the booking.')
     }
     {% endif %}
   });
 
-  for (var i = 1; i <= 18; i++)
+  for (var i = 1; i <= 14; i++)
   {
     $('#pax').append(`<label class="btn btn-sm btn-outline-primary"><input type="radio" name="pax" value="${i}">${i}</label>`)
   }
