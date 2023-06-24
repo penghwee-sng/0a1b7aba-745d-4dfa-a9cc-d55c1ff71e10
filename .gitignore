@@ -16,6 +16,7 @@ env
 venv
 .env
 .venv
+.vscode
 
 # other
 .DS_Store
