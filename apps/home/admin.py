@@ -3,7 +3,7 @@ from .models import Room, Booking, TelegramToUser
 
 
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("datetime_start", "booking_user", "booking_room", "comment", "pax")
+    list_display = ("datetime_start", "booking_user", "booking_room", "booking_comment", "pax")
     list_filter = ("booking_user",)
 
 
